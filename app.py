@@ -1,6 +1,7 @@
-import os
+﻿import os
 import redis
 from http.server import BaseHTTPRequestHandler, HTTPServer
+from prometheus_client import start_http_server, Counter
 
 # read Redis connection info from environment variables
 REDIS_HOST = os.getenv('REDIS_HOST', 'localhost')
@@ -8,10 +9,15 @@ REDIS_PORT = int(os.getenv('REDIS_PORT', 6379))
 
 r = redis.Redis(host=REDIS_HOST, port=REDIS_PORT, db=0)
 
+REQUEST_COUNT = Counter('app_requests_total', 'Total HTTP requests')
+REDIS_COUNTER = Counter('redis_counter_increments_total', 'Total Redis counter increments')
+
 class CounterHandler(BaseHTTPRequestHandler):
     def do_GET(self):
         if self.path == '/' or self.path.startswith('/?'):
+            REQUEST_COUNT.inc()
             counter_value = r.incr('my_counter')
+            REDIS_COUNTER.inc()
             html = f'''
                 <html>
                     <head>
@@ -45,4 +51,6 @@ def run(server_class=HTTPServer, handler_class=CounterHandler, host='0.0.0.0', p
 
 
 if __name__ == '__main__':
+    start_http_server(8001)
+    print('Prometheus metrics exposed on http://0.0.0.0:8001/metrics')
     run()
