@@ -1,0 +1,13 @@
+services:
+  redis:
+    image: redis:7-alpine
+
+  app:
+    build: .
+    depends_on:
+      - redis
+    environment:
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+    ports:
+      - '8000:8000'
