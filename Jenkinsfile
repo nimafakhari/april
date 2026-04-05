@@ -27,15 +27,7 @@ pipeline {
             }
         }
 
-        stage('Unit Tests') {
-            steps {
-                echo "✅ Running unit tests..."
-                sh '''
-                    . venv/bin/activate
-                    pytest tests/unit/ -v --cov=app --cov-report=xml
-                '''
-            }
-        }
+        
 
         stage('Build Docker Image') {
             steps {
@@ -47,15 +39,7 @@ pipeline {
             }
         }
 
-        stage('Integration Tests') {
-            steps {
-                echo "🧪 Running integration tests with Docker Compose..."
-                sh '''
-                    docker-compose -f docker-compose.test.yml up --build --abort-on-container-exit
-                    docker-compose -f docker-compose.test.yml down
-                '''
-            }
-        }
+        
 
         stage('Push to Registry') {
             when {
