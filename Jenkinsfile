@@ -79,7 +79,13 @@ pipeline {
 
         cleanup {
             echo "🧹 Cleaning up..."
-            sh 'docker-compose -f docker-compose.test.yml down || true'
+            script {
+                if (isUnix()) {
+                    sh 'docker-compose -f docker-compose.test.yml down || true'
+                } else {
+                    bat 'docker-compose -f docker-compose.test.yml down || exit /b 0'
+                }
+            }
         }
     }
 }
