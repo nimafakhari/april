@@ -3,9 +3,10 @@ pipeline {
 
     environment {
         DOCKER_REGISTRY = "docker.io"
+        DOCKER_USERNAME = "nimadocker3608"
         IMAGE_NAME = "new-app"
         IMAGE_TAG = "${BUILD_NUMBER}"
-        DOCKER_IMAGE = "${DOCKER_REGISTRY}/${IMAGE_NAME}:${IMAGE_TAG}"
+        DOCKER_IMAGE = "${DOCKER_REGISTRY}/${DOCKER_USERNAME}/${IMAGE_NAME}:${IMAGE_TAG}"
     }
 
     stages {
@@ -51,7 +52,7 @@ pipeline {
                             bat '''
                                 echo %DOCKER_PASSWORD% | docker login -u %DOCKER_USERNAME% --password-stdin
                                 docker push %DOCKER_IMAGE%
-                                docker push %DOCKER_REGISTRY%/%IMAGE_NAME%:latest
+                                docker push %DOCKER_REGISTRY%/%DOCKER_USERNAME%/%IMAGE_NAME%:latest
                                 docker logout
                             '''
                         }
