@@ -6,7 +6,6 @@ pipeline {
         IMAGE_NAME = "new-app"
         IMAGE_TAG = "${BUILD_NUMBER}"
         DOCKER_IMAGE = "${DOCKER_REGISTRY}/${IMAGE_NAME}:${IMAGE_TAG}"
-        KUBECONFIG = credentials('kubeconfig-minikube')
     }
 
     stages {
@@ -64,12 +63,14 @@ pipeline {
             }
             steps {
                 echo "📤 Pushing image to Docker registry..."
-                sh '''
-                    echo "${DOCKER_PASSWORD}" | docker login -u "${DOCKER_USERNAME}" --password-stdin
-                    docker push ${DOCKER_IMAGE}
-                    docker push ${DOCKER_REGISTRY}/${IMAGE_NAME}:latest
-                    docker logout
-                '''
+                withCredentials([usernamePassword(credentialsId: 'docker-hub-credentials', usernameVariable: 'DOCKER_USERNAME', passwordVariable: 'DOCKER_PASSWORD')]) {
+                    sh '''
+                        echo "${DOCKER_PASSWORD}" | docker login -u "${DOCKER_USERNAME}" --password-stdin
+                        docker push ${DOCKER_IMAGE}
+                        docker push ${DOCKER_REGISTRY}/${IMAGE_NAME}:latest
+                        docker logout
+                    '''
+                }
             }
         }
 
