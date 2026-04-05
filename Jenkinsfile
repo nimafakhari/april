@@ -83,16 +83,7 @@ pipeline {
         }
     }
 
-    post {
-        always {
-            echo "📊 Publishing test results..."
-            junit 'test-results/*.xml' || true
-            publishHTML([
-                reportDir: 'htmlcov',
-                reportFiles: 'index.html',
-                reportName: 'Code Coverage Report'
-            ])
-        }
+   
 
         success {
             echo "✅ Pipeline completed successfully!"
