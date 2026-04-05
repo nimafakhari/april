@@ -19,10 +19,19 @@ pipeline {
         stage('Build Docker Image') {
             steps {
                 echo "🐳 Building Docker image..."
-                sh '''
-                    docker build -t ${DOCKER_IMAGE} .
-                    docker tag ${DOCKER_IMAGE} ${DOCKER_REGISTRY}/${IMAGE_NAME}:latest
-                '''
+                script {
+                    if (isUnix()) {
+                        sh '''
+                            docker build -t ${DOCKER_IMAGE} .
+                            docker tag ${DOCKER_IMAGE} ${DOCKER_REGISTRY}/${IMAGE_NAME}:latest
+                        '''
+                    } else {
+                        bat '''
+                            docker build -t %DOCKER_IMAGE% .
+                            docker tag %DOCKER_IMAGE% %DOCKER_REGISTRY%/%IMAGE_NAME%:latest
+                        '''
+                    }
+                }
             }
         }
 
@@ -33,12 +42,23 @@ pipeline {
             steps {
                 echo "📤 Pushing image to Docker registry..."
                 withCredentials([usernamePassword(credentialsId: 'docker-hub-credentials', usernameVariable: 'DOCKER_USERNAME', passwordVariable: 'DOCKER_PASSWORD')]) {
-                    sh '''
-                        echo "${DOCKER_PASSWORD}" | docker login -u "${DOCKER_USERNAME}" --password-stdin
-                        docker push ${DOCKER_IMAGE}
-                        docker push ${DOCKER_REGISTRY}/${IMAGE_NAME}:latest
-                        docker logout
-                    '''
+                    script {
+                        if (isUnix()) {
+                            sh '''
+                                echo "${DOCKER_PASSWORD}" | docker login -u "${DOCKER_USERNAME}" --password-stdin
+                                docker push ${DOCKER_IMAGE}
+                                docker push ${DOCKER_REGISTRY}/${IMAGE_NAME}:latest
+                                docker logout
+                            '''
+                        } else {
+                            bat '''
+                                echo %DOCKER_PASSWORD% | docker login -u %DOCKER_USERNAME% --password-stdin
+                                docker push %DOCKER_IMAGE%
+                                docker push %DOCKER_REGISTRY%/%IMAGE_NAME%:latest
+                                docker logout
+                            '''
+                        }
+                    }
                 }
             }
         }
@@ -49,21 +69,40 @@ pipeline {
             }
             steps {
                 echo "☸️  Deploying to Kubernetes..."
-                sh '''
-                    kubectl set image deployment/app app=${DOCKER_IMAGE} -n default
-                    kubectl rollout status deployment/app -n default
-                '''
+                script {
+                    if (isUnix()) {
+                        sh '''
+                            kubectl set image deployment/app app=${DOCKER_IMAGE} -n default
+                            kubectl rollout status deployment/app -n default
+                        '''
+                    } else {
+                        bat '''
+                            kubectl set image deployment/app app=%DOCKER_IMAGE% -n default
+                            kubectl rollout status deployment/app -n default
+                        '''
+                    }
+                }
             }
         }
 
         stage('Health Check') {
             steps {
                 echo "🩺 Checking app health..."
-                sh '''
-                    sleep 10
-                    kubectl get pods -n default
-                    kubectl get svc -n default
-                '''
+                script {
+                    if (isUnix()) {
+                        sh '''
+                            sleep 10
+                            kubectl get pods -n default
+                            kubectl get svc -n default
+                        '''
+                    } else {
+                        bat '''
+                            timeout /t 10 /nobreak
+                            kubectl get pods -n default
+                            kubectl get svc -n default
+                        '''
+                    }
+                }
             }
         }
     }
