@@ -36,9 +36,6 @@ pipeline {
         }
 
         stage('Push to Registry') {
-            when {
-                branch 'v3'
-            }
             steps {
                 echo "📤 Pushing image to Docker registry..."
                 withCredentials([usernamePassword(credentialsId: 'docker-hub-credentials', usernameVariable: 'DOCKER_USERNAME', passwordVariable: 'DOCKER_PASSWORD')]) {
@@ -64,9 +61,6 @@ pipeline {
         }
 
         stage('Deploy to Kubernetes') {
-            when {
-                branch 'v3'
-            }
             steps {
                 echo "☸️  Deploying to Kubernetes..."
                 withCredentials([file(credentialsId: 'minikube-kubeconfig', variable: 'KUBECONFIG')]) {
