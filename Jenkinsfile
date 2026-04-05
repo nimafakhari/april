@@ -65,25 +65,28 @@ pipeline {
 
         stage('Deploy to Kubernetes') {
             when {
-                branch 'main'
+                branch 'v3'
             }
             steps {
                 echo "☸️  Deploying to Kubernetes..."
-                script {
-                    if (isUnix()) {
-                        sh '''
-                            kubectl set image deployment/app app=${DOCKER_IMAGE} -n default
-                            kubectl rollout status deployment/app -n default
-                        '''
-                    } else {
-                        bat '''
-                            kubectl set image deployment/app app=%DOCKER_IMAGE% -n default
-                            kubectl rollout status deployment/app -n default
-                        '''
+                withCredentials([file(credentialsId: 'minikube-kubeconfig', variable: 'KUBECONFIG')]) {
+                    script {
+                        if (isUnix()) {
+                            sh '''
+                                kubectl set image deployment/app app=${DOCKER_IMAGE} -n default
+                                kubectl rollout status deployment/app -n default
+                            '''
+                        } else {
+                            bat '''
+                                kubectl set image deployment/app app=%DOCKER_IMAGE% -n default
+                                kubectl rollout status deployment/app -n default
+                            '''
+                        }
                     }
                 }
             }
         }
+    }       
 
         stage('Health Check') {
             steps {
