@@ -16,19 +16,6 @@ pipeline {
             }
         }
 
-        stage('Install Dependencies') {
-            steps {
-                echo "📦 Installing Python dependencies..."
-                sh '''
-                    python -m venv venv
-                    . venv/bin/activate
-                    pip install -r requirements.txt
-                '''
-            }
-        }
-
-        
-
         stage('Build Docker Image') {
             steps {
                 echo "🐳 Building Docker image..."
@@ -38,8 +25,6 @@ pipeline {
                 '''
             }
         }
-
-        
 
         stage('Push to Registry') {
             when {
@@ -83,8 +68,7 @@ pipeline {
         }
     }
 
-   
-
+    post {
         success {
             echo "✅ Pipeline completed successfully!"
         }
