@@ -15,10 +15,10 @@ class CounterHandler(BaseHTTPRequestHandler):
             html = f'''
                 <html>
                     <head>
-                        <title>Redis Counter v1</title>
+                        <title>Redis v1</title>
                     </head>
                     <body>
-                        <h1>Redis counter</h1>
+                        <h1>Redis counter v1</h1>
                         <p>Current value: <strong>{counter_value}</strong></p>
                         <p><a href="/">Increment again</a></p>
                     </body>
