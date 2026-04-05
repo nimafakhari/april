@@ -97,7 +97,7 @@ pipeline {
                         '''
                     } else {
                         bat '''
-                            timeout /t 10 /nobreak
+                            ping localhost -n 11 > nul
                             kubectl get pods -n default
                             kubectl get svc -n default
                         '''
@@ -120,9 +120,13 @@ pipeline {
             echo "🧹 Cleaning up..."
             script {
                 if (isUnix()) {
-                    sh 'docker-compose -f docker-compose.test.yml down || true'
+                    sh 'if [ -f docker-compose.test.yml ]; then docker-compose -f docker-compose.test.yml down; fi || true'
                 } else {
-                    bat 'docker-compose -f docker-compose.test.yml down || exit /b 0'
+                    bat '''
+                        if exist docker-compose.test.yml (
+                            docker-compose -f docker-compose.test.yml down
+                        )
+                    '''
                 }
             }
         }
