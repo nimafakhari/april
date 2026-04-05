@@ -86,27 +86,6 @@ pipeline {
                 }
             }
         }
-
-        stage('Health Check') {
-            steps {
-                echo "🩺 Checking app health..."
-                script {
-                    if (isUnix()) {
-                        sh '''
-                            sleep 10
-                            kubectl get pods -n default
-                            kubectl get svc -n default
-                        '''
-                    } else {
-                        bat '''
-                            ping localhost -n 11 > nul
-                            kubectl get pods -n default
-                            kubectl get svc -n default
-                        '''
-                    }
-                }
-            }
-        }
     }
 
     post {
@@ -119,18 +98,8 @@ pipeline {
         }
 
         cleanup {
-            echo "🧹 Cleaning up..."
-            script {
-                if (isUnix()) {
-                    sh 'if [ -f docker-compose.test.yml ]; then docker-compose -f docker-compose.test.yml down; fi || true'
-                } else {
-                    bat '''
-                        if exist docker-compose.test.yml (
-                            docker-compose -f docker-compose.test.yml down
-                        )
-                    '''
-                }
-            }
+            echo "🧹 Cleaning up workspace..."
+            deleteDir()
         }
     }
 }
