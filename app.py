@@ -15,7 +15,7 @@ class CounterHandler(BaseHTTPRequestHandler):
             html = f'''
                 <html>
                     <head>
-                        <title>Redis Counter</title>
+                        <title>Redis Counter v1</title>
                     </head>
                     <body>
                         <h1>Redis counter</h1>
