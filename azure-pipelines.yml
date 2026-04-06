@@ -11,11 +11,11 @@ variables:
   IMAGE_TAG: '$(Build.BuildId)'
 
 stages:
-- stage: BuildDocker
-  displayName: Build Docker Image
+- stage: BuildAndPushDocker
+  displayName: Build and Push Docker Image
   jobs:
-  - job: BuildImage
-    displayName: Build and Tag Image
+  - job: BuildAndPush
+    displayName: Build and Push to Docker Hub
     steps:
     - checkout: self
     
@@ -32,15 +32,6 @@ stages:
     - script: |
         docker images
       displayName: Verify Image Built
-
-- stage: PushDocker
-  displayName: Push to Docker Hub
-  dependsOn: BuildDocker
-  jobs:
-  - job: PushImage
-    displayName: Push Image
-    steps:
-    - checkout: self
     
     - task: Docker@2
       displayName: Push to Docker Hub
@@ -54,7 +45,7 @@ stages:
 
 - stage: DeployKubernetes
   displayName: Deploy to Kubernetes
-  dependsOn: PushDocker
+  dependsOn: BuildAndPushDocker
   jobs:
   - job: DeployJob
     displayName: Deploy to Minikube
