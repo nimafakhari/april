@@ -19,19 +19,19 @@ stages:
     steps:
     - checkout: self
     
-    - script: |
-        ls -la
-        cat Dockerfile
-      displayName: Debug - Show files
-    
     - task: Docker@2
       displayName: Build Docker Image
       inputs:
         command: build
         Dockerfile: '$(Build.SourcesDirectory)/Dockerfile'
+        repository: '$(DOCKER_USERNAME)/$(IMAGE_NAME)'
         tags: |
-          $(DOCKER_USERNAME)/$(IMAGE_NAME):$(IMAGE_TAG)
-          $(DOCKER_USERNAME)/$(IMAGE_NAME):latest
+          $(IMAGE_TAG)
+          latest
+    
+    - script: |
+        docker images
+      displayName: Verify Image Built
 
 - stage: PushDocker
   displayName: Push to Docker Hub
