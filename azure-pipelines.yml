@@ -3,7 +3,7 @@ trigger:
   - azure
 
 pool:
-  vmImage: 'windows-latest'
+  vmImage: 'ubuntu-latest'
 
 variables:
   DOCKER_USERNAME: 'nimadocker3608'
