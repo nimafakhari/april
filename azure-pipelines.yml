@@ -1,0 +1,69 @@
+trigger:
+  - v3
+  - azure
+
+pool:
+  vmImage: 'windows-latest'
+
+variables:
+  DOCKER_USERNAME: 'nimadocker3608'
+  IMAGE_NAME: 'new-app'
+  IMAGE_TAG: '$(Build.BuildId)'
+
+stages:
+- stage: BuildDocker
+  displayName: Build Docker Image
+  jobs:
+  - job: BuildImage
+    displayName: Build and Tag Image
+    steps:
+    - checkout: self
+    
+    - task: Docker@2
+      displayName: Build Docker Image
+      inputs:
+        command: build
+        Dockerfile: '$(Build.SourcesDirectory)/Dockerfile'
+        tags: |
+          $(DOCKER_USERNAME)/$(IMAGE_NAME):$(IMAGE_TAG)
+          $(DOCKER_USERNAME)/$(IMAGE_NAME):latest
+
+- stage: PushDocker
+  displayName: Push to Docker Hub
+  dependsOn: BuildDocker
+  jobs:
+  - job: PushImage
+    displayName: Push Image
+    steps:
+    - checkout: self
+    
+    - task: Docker@2
+      displayName: Push to Docker Hub
+      inputs:
+        command: push
+        repository: '$(DOCKER_USERNAME)/$(IMAGE_NAME)'
+        tags: |
+          $(IMAGE_TAG)
+          latest
+        containerRegistry: DockerHubConnection
+
+- stage: DeployKubernetes
+  displayName: Deploy to Kubernetes
+  dependsOn: PushDocker
+  jobs:
+  - job: DeployJob
+    displayName: Deploy to Minikube
+    steps:
+    - checkout: self
+    
+    - script: |
+        kubectl apply -f $(Build.SourcesDirectory)/k8s/app-deployment.yml
+      displayName: Deploy App
+    
+    - script: |
+        kubectl apply -f $(Build.SourcesDirectory)/k8s/redis-deployment.yml
+      displayName: Deploy Redis
+    
+    - script: |
+        kubectl get pods -n default
+      displayName: Verify Deployment
