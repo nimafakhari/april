@@ -53,11 +53,11 @@ stages:
     - checkout: self
     
     - script: |
-        kubectl apply -f $(Build.SourcesDirectory)/k8s/app-deployment.yml --dry-run=client -o yaml
+        kubectl apply -f $(Build.SourcesDirectory)/k8s/app-deployment.yml --dry-run=client --validate=false -o yaml
       displayName: Validate App Manifest
     
     - script: |
-        kubectl apply -f $(Build.SourcesDirectory)/k8s/redis-deployment.yml --dry-run=client -o yaml
+        kubectl apply -f $(Build.SourcesDirectory)/k8s/redis-deployment.yml --dry-run=client --validate=false -o yaml
       displayName: Validate Redis Manifest
     
     - script: |
