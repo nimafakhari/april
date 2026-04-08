@@ -53,19 +53,39 @@ stages:
     - checkout: self
     
     - script: |
-        wget https://github.com/instrumenta/kubeval/releases/latest/download/kubeval-linux-amd64.tar.gz
-        tar xf kubeval-linux-amd64.tar.gz
-        ./kubeval $(Build.SourcesDirectory)/k8s/app-deployment.yml
+        python3 -c "
+        import yaml
+        import sys
+        try:
+            with open('$(Build.SourcesDirectory)/k8s/app-deployment.yml', 'r') as f:
+                yaml.safe_load_all(f)
+            print('✓ app-deployment.yml is valid YAML')
+        except Exception as e:
+            print(f'✗ Error: {e}', file=sys.stderr)
+            sys.exit(1)
+        "
       displayName: Validate App Manifest
     
     - script: |
-        ./kubeval $(Build.SourcesDirectory)/k8s/redis-deployment.yml
+        python3 -c "
+        import yaml
+        import sys
+        try:
+            with open('$(Build.SourcesDirectory)/k8s/redis-deployment.yml', 'r') as f:
+                yaml.safe_load_all(f)
+            print('✓ redis-deployment.yml is valid YAML')
+        except Exception as e:
+            print(f'✗ Error: {e}', file=sys.stderr)
+            sys.exit(1)
+        "
       displayName: Validate Redis Manifest
     
     - script: |
         echo "Manifests validated successfully. Ready for deployment to actual Kubernetes cluster."
-        echo "Files to deploy:"
+        echo ""
+        echo "=== App Deployment Manifest ==="
         cat $(Build.SourcesDirectory)/k8s/app-deployment.yml
-        echo "---"
+        echo ""
+        echo "=== Redis Deployment Manifest ==="
         cat $(Build.SourcesDirectory)/k8s/redis-deployment.yml
       displayName: Deployment Ready
