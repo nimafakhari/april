@@ -1,13 +1,40 @@
+version: '3.9'
+
 services:
   redis:
     image: redis:7-alpine
+    container_name: redis-container
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+    networks:
+      - app-network
 
   app:
-    build: .
+    build:
+      context: ..
+      dockerfile: Dockerfile
+    container_name: homepage-app
     depends_on:
-      - redis
+      redis:
+        condition: service_healthy
     environment:
       - REDIS_HOST=redis
       - REDIS_PORT=6379
     ports:
       - '8000:8000'
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+    networks:
+      - app-network
+
+networks:
+  app-network:
+    driver: bridge
