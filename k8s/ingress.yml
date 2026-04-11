@@ -1,0 +1,26 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: new-app-ingress
+  namespace: default
+  annotations:
+    kubernetes.io/ingress.class: nginx
+    cert-manager.io/cluster-issuer: letsencrypt-prod  # Optional: for HTTPS
+spec:
+  ingressClassName: nginx
+  rules:
+    - host: newapp.example.com  # Change to your domain
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: app-service
+                port:
+                  number: 8000
+  # Uncomment below for HTTPS
+  # tls:
+  #   - hosts:
+  #       - newapp.example.com
+  #     secretName: newapp-tls
