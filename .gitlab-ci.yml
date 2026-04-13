@@ -1,0 +1,55 @@
+# GitLab CI/CD Pipeline - Docker Build + Terraform Deploy
+# Auto-deploy to Azure on push to main branch
+
+variables:
+  DOCKER_DRIVER: overlay2
+  DOCKER_TLS_CERTDIR: "/certs"
+  REGISTRY_URL: "registry.gitlab.com"
+  IMAGE_NAME: "${REGISTRY_URL}/${CI_PROJECT_NAMESPACE}/${CI_PROJECT_NAME}"
+  IMAGE_TAG: "${CI_COMMIT_SHORT_SHA}"
+  TF_ROOT: "${CI_PROJECT_DIR}/terraform"
+
+stages:
+  - build
+  - deploy
+
+# Stage 1: Build Docker image
+build:docker:
+  stage: build
+  image: docker:latest
+  services:
+    - docker:dind
+  before_script:
+    - echo $CI_REGISTRY_PASSWORD | docker login -u $CI_REGISTRY_USER --password-stdin $CI_REGISTRY
+  script:
+    - docker build -t ${IMAGE_NAME}:${IMAGE_TAG} .
+    - docker tag ${IMAGE_NAME}:${IMAGE_TAG} ${IMAGE_NAME}:latest
+    - docker push ${IMAGE_NAME}:${IMAGE_TAG}
+    - docker push ${IMAGE_NAME}:latest
+  after_script:
+    - docker logout $CI_REGISTRY
+  only:
+    - main
+    - tags
+
+# Stage 2: Deploy with Terraform
+deploy:terraform:
+  stage: deploy
+  image: hashicorp/terraform:latest
+  environment:
+    name: production
+  script:
+    - cd ${TF_ROOT}
+    - terraform init
+    - terraform validate
+    - terraform plan -out=tfplan
+    - terraform apply -auto-approve tfplan
+    - terraform output -json > ../terraform_outputs.json
+  artifacts:
+    paths:
+      - terraform_outputs.json
+      - ${TF_ROOT}/.terraform.lock.hcl
+    expire_in: 30 days
+  only:
+    - main
+  when: on_success
