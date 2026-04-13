@@ -37,7 +37,7 @@ build:docker:
     - tags
 
 # ============================================================================
-# STAGE 2: DEPLOY - Terraform Deploy (Automatic on main)
+# TAGE 2: DEPLOY - Terraform Deploy (Automatic on main)1
 # ============================================================================
 
 deploy:terraform:
