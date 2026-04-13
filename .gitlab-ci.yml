@@ -26,13 +26,10 @@ build:docker:
   before_script:
     - echo $CI_REGISTRY_PASSWORD | docker login -u $CI_REGISTRY_USER --password-stdin $CI_REGISTRY
   script:
-    - echo "Building Docker image: ${IMAGE_NAME}:${IMAGE_TAG}"
     - docker build -t ${IMAGE_NAME}:${IMAGE_TAG} .
     - docker tag ${IMAGE_NAME}:${IMAGE_TAG} ${IMAGE_NAME}:latest
-    - echo "Pushing to GitLab Registry..."
     - docker push ${IMAGE_NAME}:${IMAGE_TAG}
     - docker push ${IMAGE_NAME}:latest
-    - echo "Docker image pushed successfully"
   after_script:
     - docker logout $CI_REGISTRY
   only:
@@ -49,19 +46,12 @@ deploy:terraform:
   environment:
     name: production
   script:
-    - echo "Terraform Deployment Starting..."
     - cd ${TF_ROOT}
-    - echo "Initializing Terraform..."
     - terraform init
-    - echo "Validating configuration..."
     - terraform validate
-    - echo "Planning changes..."
     - terraform plan -out=tfplan
-    - echo "Applying Terraform configuration (AUTO)..."
     - terraform apply -auto-approve tfplan
-    - echo "Exporting outputs..."
     - terraform output -json > ../terraform_outputs.json
-    - echo "Deployment completed successfully!"
   artifacts:
     paths:
       - terraform_outputs.json
