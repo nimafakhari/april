@@ -42,9 +42,14 @@ build:docker:
 
 deploy:terraform:
   stage: deploy
-  image: hashicorp/terraform:1.5.0
+  image: ubuntu:latest
   environment:
     name: production
+  before_script:
+    - apt-get update && apt-get install -y wget unzip
+    - wget https://releases.hashicorp.com/terraform/1.5.0/terraform_1.5.0_linux_amd64.zip
+    - unzip terraform_1.5.0_linux_amd64.zip
+    - mv terraform /usr/local/bin/
   script:
     - cd ${TF_ROOT}
     - terraform init
