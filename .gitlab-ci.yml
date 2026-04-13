@@ -1,0 +1,72 @@
+# GitLab CI/CD Pipeline - Docker Build + Terraform Deploy
+# Auto-deploy to Azure on push to main branch
+
+variables:
+  DOCKER_DRIVER: overlay2
+  DOCKER_TLS_CERTDIR: "/certs"
+  REGISTRY_URL: "registry.gitlab.com"
+  IMAGE_NAME: "${REGISTRY_URL}/${CI_PROJECT_NAMESPACE}/${CI_PROJECT_NAME}"
+  IMAGE_TAG: "${CI_COMMIT_SHORT_SHA}"
+  TERRAFORM_VERSION: "1.5.0"
+  TF_ROOT: "${CI_PROJECT_DIR}/terraform"
+
+stages:
+  - build
+  - deploy
+
+# ============================================================================
+# STAGE 1: BUILD - Build and push Docker image
+# ============================================================================
+
+build:docker:
+  stage: build
+  image: docker:latest
+  services:
+    - docker:dind
+  before_script:
+    - echo $CI_REGISTRY_PASSWORD | docker login -u $CI_REGISTRY_USER --password-stdin $CI_REGISTRY
+  script:
+    - echo "Building Docker image: ${IMAGE_NAME}:${IMAGE_TAG}"
+    - docker build -t ${IMAGE_NAME}:${IMAGE_TAG} .
+    - docker tag ${IMAGE_NAME}:${IMAGE_TAG} ${IMAGE_NAME}:latest
+    - echo "Pushing to GitLab Registry..."
+    - docker push ${IMAGE_NAME}:${IMAGE_TAG}
+    - docker push ${IMAGE_NAME}:latest
+    - echo "Docker image pushed successfully"
+  after_script:
+    - docker logout $CI_REGISTRY
+  only:
+    - main
+    - tags
+
+# ============================================================================
+# STAGE 2: DEPLOY - Terraform Deploy (Automatic on main)
+# ============================================================================
+
+deploy:terraform:
+  stage: deploy
+  image: alpine/terraform:${TERRAFORM_VERSION}
+  environment:
+    name: production
+  script:
+    - echo "Terraform Deployment Starting..."
+    - cd ${TF_ROOT}
+    - echo "Initializing Terraform..."
+    - terraform init
+    - echo "Validating configuration..."
+    - terraform validate
+    - echo "Planning changes..."
+    - terraform plan -out=tfplan
+    - echo "Applying Terraform configuration (AUTO)..."
+    - terraform apply -auto-approve tfplan
+    - echo "Exporting outputs..."
+    - terraform output -json > ../terraform_outputs.json
+    - echo "Deployment completed successfully!"
+  artifacts:
+    paths:
+      - terraform_outputs.json
+      - ${TF_ROOT}/.terraform.lock.hcl
+    expire_in: 30 days
+  only:
+    - main
+  when: on_success
