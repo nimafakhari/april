@@ -42,7 +42,7 @@ build:docker:
 
 deploy:terraform:
   stage: deploy
-  image: alpine/terraform:${TERRAFORM_VERSION}
+  image: docker.io/alpine/terraform:${TERRAFORM_VERSION}
   environment:
     name: production
   script:
