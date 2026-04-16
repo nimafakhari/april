@@ -10,7 +10,7 @@ terraform {
 
 provider "azurerm" {
   features {}
-  subscription_id = "b1215226-8364-4b26-a877-1ea57b621a68"
+  subscription_id = var.azure_subscription_id
   skip_provider_registration = true
 }
 
@@ -21,7 +21,7 @@ resource "azurerm_resource_group" "main" {
   tags     = var.tags
 }
 
-# Virtual Network
+# Virt ual Network
 resource "azurerm_virtual_network" "main" {
   name                = "${var.environment}-vnet"
   address_space       = var.vnet_address_space

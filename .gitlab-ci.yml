@@ -1,0 +1,74 @@
+# GitLab CI/CD Pipeline - Docker Build + Terraform Deploy
+# Auto-deploy to Azure on push to main branch
+
+variables:
+  DOCKER_DRIVER: overlay2
+  DOCKER_TLS_CERTDIR: "/certs"
+  REGISTRY_URL: "registry.gitlab.com"
+  IMAGE_NAME: "${REGISTRY_URL}/${CI_PROJECT_NAMESPACE}/${CI_PROJECT_NAME}"
+  IMAGE_TAG: "${CI_COMMIT_SHORT_SHA}"
+  TERRAFORM_VERSION: "1.5.0"
+  TF_ROOT: "${CI_PROJECT_DIR}/terraform"
+
+stages:
+  - build
+  - deploy
+
+# ============================================================================
+# STAGE 1: BUILD - Build and push Docker image
+# ============================================================================
+
+build:docker:
+  stage: build
+  image: docker:latest
+  services:
+    - docker:dind
+  before_script:
+    - echo $CI_REGISTRY_PASSWORD | docker login -u $CI_REGISTRY_USER --password-stdin $CI_REGISTRY
+  script:
+    - docker build -t ${IMAGE_NAME}:${IMAGE_TAG} .
+    - docker tag ${IMAGE_NAME}:${IMAGE_TAG} ${IMAGE_NAME}:latest
+    - docker push ${IMAGE_NAME}:${IMAGE_TAG}
+    - docker push ${IMAGE_NAME}:latest
+  after_script:
+    - docker logout $CI_REGISTRY
+  only:
+    - main
+    - tags
+
+# ============================================================================
+# TAGE 2: DEPLOY - Terraform Deploy (Automatic on main)1
+# ============================================================================
+
+deploy:terraform:
+  stage: deploy
+  image: ubuntu:latest
+  environment:
+    name: production
+  before_script:
+    - apt-get update && apt-get install -y wget unzip
+    - wget https://releases.hashicorp.com/terraform/1.5.0/terraform_1.5.0_linux_amd64.zip
+    - unzip -o terraform_1.5.0_linux_amd64.zip -d /tmp
+    - mv /tmp/terraform /usr/local/bin/terraform
+    - export TF_VAR_azure_subscription_id="${AZURE_SUBSCRIPTION_ID}"
+    - export TF_VAR_admin_password="${ADMIN_PASSWORD}"
+    - export ARM_SUBSCRIPTION_ID="${ARM_SUBSCRIPTION_ID}"
+    - export ARM_CLIENT_ID="${ARM_CLIENT_ID}"
+    - export ARM_CLIENT_SECRET="${ARM_CLIENT_SECRET}"
+    - export ARM_TENANT_ID="${ARM_TENANT_ID}"
+    - export ARM_ENVIRONMENT="public"
+  script:
+    - cd ${TF_ROOT}
+    - terraform init
+    - terraform validate
+    - terraform plan -out=tfplan
+    - terraform apply -auto-approve tfplan
+    - terraform output -json > ../terraform_outputs.json
+  artifacts:
+    paths:
+      - terraform_outputs.json
+      - ${TF_ROOT}/.terraform.lock.hcl
+    expire_in: 30 days
+  only:
+    - main
+  when: on_success
