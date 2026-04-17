@@ -1,4 +1,6 @@
+import logging
 import os
+from pathlib import Path
 import redis
 from http.server import BaseHTTPRequestHandler, HTTPServer
 
@@ -8,10 +10,24 @@ REDIS_PORT = int(os.getenv('REDIS_PORT', 6379))
 
 r = redis.Redis(host=REDIS_HOST, port=REDIS_PORT, db=0)
 
+logs_dir = Path('logs')
+logs_dir.mkdir(exist_ok=True)
+
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s %(levelname)s %(message)s',
+    handlers=[
+        logging.FileHandler(logs_dir / 'app.log'),
+        logging.StreamHandler(),
+    ],
+)
+logger = logging.getLogger(__name__)
+
 class CounterHandler(BaseHTTPRequestHandler):
     def do_GET(self):
         if self.path == '/' or self.path.startswith('/?'):
             counter_value = r.incr('my_counter')
+            logger.info('GET / counter=%d remote=%s', counter_value, self.client_address[0])
             html = f'''
                 <html>
                     <head>
@@ -30,17 +46,18 @@ class CounterHandler(BaseHTTPRequestHandler):
             self.end_headers()
             self.wfile.write(html.encode('utf-8'))
         else:
+            logger.warning('404 path=%s remote=%s', self.path, self.client_address[0])
             self.send_error(404)
 
 
 def run(server_class=HTTPServer, handler_class=CounterHandler, host='0.0.0.0', port=8000):
     server_address = (host, port)
     httpd = server_class(server_address, handler_class)
-    print(f'Serving on http://{host}:{port}')
+    logger.info('Serving on http://%s:%s', host, port)
     try:
         httpd.serve_forever()
     except KeyboardInterrupt:
-        print('\nStopping server...')
+        logger.info('Stopping server...')
         httpd.server_close()
 
 
