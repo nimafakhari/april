@@ -1,0 +1,9 @@
+- name: Deploy simple Docker app to remote host
+  hosts: dockerhost
+  become: true
+  vars:
+    app_dir: /opt/myapp
+
+  roles:
+    - docker
+    - app

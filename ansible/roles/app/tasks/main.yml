@@ -1,0 +1,28 @@
+- name: Create application directory
+  file:
+    path: "{{ app_dir }}"
+    state: directory
+    owner: ubuntu
+    group: ubuntu
+    mode: '0755'
+
+- name: Copy project files to remote host
+  copy:
+    src: "{{ playbook_dir }}/.."
+    dest: "{{ app_dir }}"
+    owner: ubuntu
+    group: ubuntu
+    mode: '0755'
+    recurse: yes
+    exclude:
+      - .git
+      - .venv
+      - terraform
+      - ansible
+
+- name: Build and start the Docker Compose app
+  community.docker.docker_compose:
+    project_src: "{{ app_dir }}"
+    state: present
+    restarted: true
+    pull: false
