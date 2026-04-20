@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "dgSpecHash": "XDH11g/AM3Q=",
+  "dgSpecHash": "ZP6/H49amig=",
   "success": true,
-  "projectFilePath": "C:\\temp\\75000\\csharp\\RedisCounter.csproj",
+  "projectFilePath": "C:\\temp\\75000\\april\\RedisCounter.csproj",
   "expectedPackageFiles": [
     "C:\\Users\\Nima.Fakhari\\.nuget\\packages\\microsoft.extensions.logging.abstractions\\6.0.0\\microsoft.extensions.logging.abstractions.6.0.0.nupkg.sha512",
     "C:\\Users\\Nima.Fakhari\\.nuget\\packages\\pipelines.sockets.unofficial\\2.2.8\\pipelines.sockets.unofficial.2.2.8.nupkg.sha512",

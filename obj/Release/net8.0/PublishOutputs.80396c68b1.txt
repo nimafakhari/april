@@ -1,0 +1,7 @@
+C:\temp\75000\april\app\RedisCounter.exe
+C:\temp\75000\april\app\RedisCounter.dll
+C:\temp\75000\april\app\RedisCounter.deps.json
+C:\temp\75000\april\app\RedisCounter.runtimeconfig.json
+C:\temp\75000\april\app\RedisCounter.pdb
+C:\temp\75000\april\app\Pipelines.Sockets.Unofficial.dll
+C:\temp\75000\april\app\StackExchange.Redis.dll

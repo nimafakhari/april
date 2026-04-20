@@ -202,11 +202,11 @@
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "C:\\temp\\75000\\csharp\\RedisCounter.csproj",
+      "projectUniqueName": "C:\\temp\\75000\\april\\RedisCounter.csproj",
       "projectName": "RedisCounter",
-      "projectPath": "C:\\temp\\75000\\csharp\\RedisCounter.csproj",
+      "projectPath": "C:\\temp\\75000\\april\\RedisCounter.csproj",
       "packagesPath": "C:\\Users\\Nima.Fakhari\\.nuget\\packages\\",
-      "outputPath": "C:\\temp\\75000\\csharp\\obj\\",
+      "outputPath": "C:\\temp\\75000\\april\\obj\\",
       "projectStyle": "PackageReference",
       "fallbackFolders": [
         "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
@@ -263,6 +263,9 @@
         "assetTargetFallback": true,
         "warn": true,
         "frameworkReferences": {
+          "Microsoft.AspNetCore.App": {
+            "privateAssets": "none"
+          },
           "Microsoft.NETCore.App": {
             "privateAssets": "all"
           }

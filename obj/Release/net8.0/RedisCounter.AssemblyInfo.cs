@@ -11,9 +11,9 @@ using System;
 using System.Reflection;
 
 [assembly: System.Reflection.AssemblyCompanyAttribute("RedisCounter")]
-[assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
+[assembly: System.Reflection.AssemblyConfigurationAttribute("Release")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+6d67dc09864b0581a10b423590ecb08587b499d3")]
 [assembly: System.Reflection.AssemblyProductAttribute("RedisCounter")]
 [assembly: System.Reflection.AssemblyTitleAttribute("RedisCounter")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

@@ -1,5 +1,11 @@
 # Redis Counter - C# Version
 
+dotnet restore
+dotnet build
+dotnet publish -c Release -o ./app
+dotnet ./app/RedisCounter.dll
+dotnet run
+
 A Redis counter web application built with **C# and .NET 8**.
 
 ## Features

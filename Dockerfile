@@ -6,11 +6,11 @@ WORKDIR /src
 COPY RedisCounter.csproj ./
 RUN dotnet restore
 
-COPY Program.cs ./
+COPY . ./
 RUN dotnet publish -c Release -o /app
 
 # Runtime stage
-FROM mcr.microsoft.com/dotnet/runtime:8.0
+FROM mcr.microsoft.com/dotnet/aspnet:8.0
 
 WORKDIR /opt/app
 
