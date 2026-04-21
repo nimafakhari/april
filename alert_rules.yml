@@ -1,0 +1,43 @@
+groups:
+  - name: app_alerts
+    rules:
+
+      # Fires when request rate exceeds 2 req/s for 30 seconds
+      - alert: HighRequestRate
+        expr: rate(app_requests_total[1m]) > 2
+        for: 30s
+        labels:
+          severity: warning
+        annotations:
+          summary: "High request rate on {{ $labels.endpoint }}"
+          description: "Rate is {{ $value | printf \"%.2f\" }} req/s on endpoint {{ $labels.endpoint }}"
+
+      # Fires immediately when any Redis error is recorded
+      - alert: RedisErrors
+        expr: increase(redis_errors_total[5m]) > 0
+        for: 0s
+        labels:
+          severity: critical
+        annotations:
+          summary: "Redis errors detected"
+          description: "{{ $value | printf \"%.0f\" }} Redis error(s) in the last 5 minutes"
+
+      # Fires when p95 request latency exceeds 0.5s
+      - alert: SlowRequests
+        expr: histogram_quantile(0.95, rate(app_request_duration_seconds_bucket[2m])) > 0.5
+        for: 0s
+        labels:
+          severity: warning
+        annotations:
+          summary: "Slow requests detected on {{ $labels.endpoint }}"
+          description: "p95 latency is {{ $value | printf \"%.2f\" }}s on {{ $labels.endpoint }}"
+
+      # Fires when the Redis counter value climbs above 20
+      - alert: HighRedisCounterValue
+        expr: redis_counter_current_value > 20
+        for: 0s
+        labels:
+          severity: info
+        annotations:
+          summary: "Redis counter is high"
+          description: "Counter value is {{ $value | printf \"%.0f\" }}"
