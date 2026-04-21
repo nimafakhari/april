@@ -32,3 +32,14 @@ This project includes a simple Python Redis counter app plus an ELK stack for lo
 ## Logs
 
 The app writes log events to `logs/app.log`. Filebeat reads that file and forwards logs into Elasticsearch.
+
+
+
+app.py
+  │ writes
+  ▼
+logs/app.log  (shared volume)
+  │ read by
+  ▼
+filebeat  ──► logstash:5044  ──► elasticsearch:9200  ──► kibana:5601
+                (parse/filter)       (store index)         (visualize)
