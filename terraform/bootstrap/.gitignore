@@ -1,0 +1,6 @@
+# local state from this bootstrap module
+terraform.tfstate
+terraform.tfstate.*
+.terraform/
+.terraform.lock.hcl
+terraform.tfvars

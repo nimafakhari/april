@@ -1,0 +1,4 @@
+location           = "westeurope"
+prefix             = "april"
+container_app_name = "april-app"
+alert_email        = "you@example.com"
