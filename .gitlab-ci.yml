@@ -1,21 +1,16 @@
-# GitLab CI/CD Pipeline - Docker Build + Terraform Deploy
-# Auto-deploy to Azure on push to main branch
+# GitLab CI/CD Pipeline - Build and push Docker image
 
 variables:
   DOCKER_DRIVER: overlay2
   DOCKER_TLS_CERTDIR: "/certs"
-  REGISTRY_URL: "registry.gitlab.com"
-  IMAGE_NAME: "${REGISTRY_URL}/${CI_PROJECT_NAMESPACE}/${CI_PROJECT_NAME}"
+  IMAGE_NAME: "${CI_REGISTRY_IMAGE}"
   IMAGE_TAG: "${CI_COMMIT_SHORT_SHA}"
-  TERRAFORM_VERSION: "1.5.0"
-  TF_ROOT: "${CI_PROJECT_DIR}/terraform"
 
 stages:
   - build
-  - deploy
 
 # ============================================================================
-# STAGE 1: BUILD - Build and push Docker image
+# STAGE 1: BUILD - Build and push Docker image to GitLab Registry
 # ============================================================================
 
 build:docker:
@@ -35,33 +30,3 @@ build:docker:
   only:
     - main
     - tags
-
-# ============================================================================
-# TAGE 2: DEPLOY - Terraform Deploy (Automatic on main)1
-# ============================================================================
-
-deploy:terraform:
-  stage: deploy
-  image: ubuntu:latest
-  environment:
-    name: production
-  before_script:
-    - apt-get update && apt-get install -y wget unzip
-    - wget https://releases.hashicorp.com/terraform/1.5.0/terraform_1.5.0_linux_amd64.zip
-    - unzip -o terraform_1.5.0_linux_amd64.zip -d /tmp
-    - mv /tmp/terraform /usr/local/bin/terraform
-  script:
-    - cd ${TF_ROOT}
-    - terraform init
-    - terraform validate
-    - terraform plan -out=tfplan
-    - terraform apply -auto-approve tfplan
-    - terraform output -json > ../terraform_outputs.json
-  artifacts:
-    paths:
-      - terraform_outputs.json
-      - ${TF_ROOT}/.terraform.lock.hcl
-    expire_in: 30 days
-  only:
-    - main
-  when: on_success
